@@ -1,0 +1,1 @@
+The product images are stored as binary assets in the repository.
