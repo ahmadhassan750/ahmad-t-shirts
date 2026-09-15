@@ -1,1 +1,0 @@
-Product image binary upload requires Git data blob encoding.
