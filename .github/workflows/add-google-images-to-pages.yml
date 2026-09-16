@@ -1,0 +1,79 @@
+name: Add Google image-search visuals to all pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add page-specific fashion images
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          pages = [
+            'shop.html','men-t-shirts.html','oversized-t-shirts.html','gym-t-shirts.html',
+            'graphic-t-shirts.html','new-arrivals.html','custom-print.html','product.html',
+            'about.html','contact.html','faq.html','size-guide.html','shipping.html',
+            'returns.html','privacy.html','terms.html'
+          ]
+
+          images = {
+            'gym-t-shirts.html': 'https://cdn.shopify.com/s/files/1/0618/9462/3460/products/13-2.jpg?v=1645427169',
+            'custom-print.html': 'https://www.yallaprinting.ae/cdn/shop/files/653f3a7c1f668e62a1168254-custom-t-shirts-for-men-women-design.jpg?v=1735639201&width=1400',
+            'graphic-t-shirts.html': 'https://mediahub.boohooman.com/bmm75918_black_xl?dpr=1&qlt=70&ssz=true&w=549',
+            'oversized-t-shirts.html': 'https://dynamobrand.co/cdn/shop/files/5_4.jpg?v=1770650420&width=800',
+            'men-t-shirts.html': 'https://dynamobrand.co/cdn/shop/files/5_4.jpg?v=1770650420&width=800',
+            'new-arrivals.html': 'https://sc3.locondo.jp/contents/commodity_image/RK/RK6854EU000309_5_l.jpg',
+            'shop.html': 'https://dynamobrand.co/cdn/shop/files/5_4.jpg?v=1770650420&width=800',
+            'product.html': 'https://dynamobrand.co/cdn/shop/files/5_4.jpg?v=1770650420&width=800',
+            'about.html': 'https://sc3.locondo.jp/contents/commodity_image/RK/RK6854EU000309_5_l.jpg',
+            'contact.html': 'https://www.yallaprinting.ae/cdn/shop/files/653f3a7c1f668e62a1168254-custom-t-shirts-for-men-women-design.jpg?v=1735639201&width=1400',
+            'faq.html': 'https://www.yallaprinting.ae/cdn/shop/files/653f3a7c1f668e62a1168254-custom-t-shirts-for-men-women-design.jpg?v=1735639201&width=1400',
+            'size-guide.html': 'https://dynamobrand.co/cdn/shop/files/5_4.jpg?v=1770650420&width=800',
+            'shipping.html': 'https://dynamobrand.co/cdn/shop/files/5_4.jpg?v=1770650420&width=800',
+            'returns.html': 'https://dynamobrand.co/cdn/shop/files/5_4.jpg?v=1770650420&width=800',
+            'privacy.html': 'https://dynamobrand.co/cdn/shop/files/5_4.jpg?v=1770650420&width=800',
+            'terms.html': 'https://dynamobrand.co/cdn/shop/files/5_4.jpg?v=1770650420&width=800',
+          }
+
+          for name in pages:
+            p = Path(name)
+            if not p.exists():
+              continue
+            s = p.read_text(encoding='utf-8')
+            url = images[name]
+            alt = 'Ahmad T-Shirts men fashion and streetwear'
+            if name == 'gym-t-shirts.html': alt = 'Men gym performance T-shirt'
+            if name == 'custom-print.html': alt = 'Custom printed T-shirt front and back'
+            if name == 'graphic-t-shirts.html': alt = 'Men graphic oversized streetwear T-shirt'
+
+            # Replace broken/local product image references with reliable web image URLs.
+            s = s.replace('assets/product-front.webp', url).replace('./assets/product-front.webp', url)
+            s = s.replace('assets/product-back.webp', url).replace('./assets/product-back.webp', url)
+
+            # Ensure every requested page has a visible image even if it previously had no product image.
+            if '<img ' not in s.lower():
+              block = f'<section class="wrap" style="margin:30px auto"><img src="{url}" alt="{alt}" style="width:100%;max-height:520px;object-fit:cover;display:block;border-radius:18px"></section>'
+              s = s.replace('<main>', '<main>'+block, 1)
+            else:
+              # Add a prominent page visual after <main> if no remote image from this pass exists.
+              if url not in s:
+                block = f'<section class="wrap" style="margin:30px auto"><img src="{url}" alt="{alt}" style="width:100%;max-height:520px;object-fit:cover;display:block;border-radius:18px"></section>'
+                s = s.replace('<main>', '<main>'+block, 1)
+            p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add '*.html'
+          git diff --cached --quiet || git commit -m "Add Google image-search visuals across website pages"
+          git push
