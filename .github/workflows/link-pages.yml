@@ -1,0 +1,47 @@
+name: Link website pages
+on:
+  push:
+    paths:
+      - '.github/workflows/link-pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update homepage links
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          replacements={
+            '<a class="brand" href="#home">':'<a class="brand" href="index.html">',
+            '<nav class="navlinks"><a href="#shop">Shop</a><a href="#categories">Categories</a><a href="#new">New Arrivals</a><a href="#custom">Custom Print</a><a href="#about">About</a></nav>':'<nav class="navlinks"><a href="shop.html">Shop</a><a href="men-t-shirts.html">Men\'s T-Shirts</a><a href="oversized-t-shirts.html">Oversized</a><a href="new-arrivals.html">New Arrivals</a><a href="custom-print.html">Custom Print</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav>',
+            '<div class="mobileNav" id="mobileNav"><a href="#shop">Shop</a><a href="#categories">Categories</a><a href="#new">New Arrivals</a><a href="#custom">Custom Print</a><a href="#about">About</a></div>':'<div class="mobileNav" id="mobileNav"><a href="shop.html">Shop</a><a href="men-t-shirts.html">Men\'s T-Shirts</a><a href="oversized-t-shirts.html">Oversized</a><a href="gym-t-shirts.html">Gym T-Shirts</a><a href="graphic-t-shirts.html">Graphic T-Shirts</a><a href="new-arrivals.html">New Arrivals</a><a href="custom-print.html">Custom Print</a><a href="about.html">About</a><a href="contact.html">Contact</a></div>',
+            '<a class="underlink" href="#shop">VIEW ALL</a>':'<a class="underlink" href="shop.html">VIEW ALL</a>',
+            '<a class="category" href="#shop" onclick="setFilter(\'premium\')">':'<a class="category" href="men-t-shirts.html">',
+            '<a class="category" href="#shop" onclick="setFilter(\'oversized\')">':'<a class="category" href="oversized-t-shirts.html">',
+            '<a class="category" href="#shop" onclick="setFilter(\'graphic\')">':'<a class="category" href="graphic-t-shirts.html">',
+            '<a class="category" href="#custom">':'<a class="category" href="custom-print.html">',
+            '<a class="btn" href="#shop">Shop collection</a>':'<a class="btn" href="shop.html">Shop collection</a>',
+            '<a class="btn outline" href="#custom">':'<a class="btn outline" href="custom-print.html">',
+            '<a class="underlink" id="resultCount">':'<a class="underlink" id="resultCount" href="shop.html">',
+            '<a href="#shop">Premium T-Shirts</a>':'<a href="men-t-shirts.html">Premium T-Shirts</a>',
+            '<a href="#shop">Oversized T-Shirts</a>':'<a href="oversized-t-shirts.html">Oversized T-Shirts</a>',
+            '<a href="#shop">Graphic Tees</a>':'<a href="graphic-t-shirts.html">Graphic Tees</a>',
+            '<a href="#custom">Custom Print</a>':'<a href="custom-print.html">Custom Print</a>',
+          }
+          for a,b in replacements.items(): s=s.replace(a,b)
+          s=s.replace('<a href="#about">About</a>','<a href="about.html">About</a>')
+          s=s.replace('<div class="copyright">© 2026 Ahmad T-Shirts. All Rights Reserved.</div>','<div class="copyright"><a href="privacy.html">Privacy</a> &nbsp;•&nbsp; <a href="terms.html">Terms</a> &nbsp;•&nbsp; <a href="returns.html">Returns</a> &nbsp;•&nbsp; <a href="shipping.html">Shipping</a> &nbsp;•&nbsp; <a href="size-guide.html">Size Guide</a> &nbsp;•&nbsp; © 2026 Ahmad T-Shirts. All Rights Reserved.</div>')
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Connect homepage to new website pages'
+          git push
