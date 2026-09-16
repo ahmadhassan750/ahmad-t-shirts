@@ -1,0 +1,62 @@
+name: Fix site pages and images
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fix-site-pages.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix page images and navigation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          root = Path('.')
+          pages = [
+              'shop.html','men-t-shirts.html','oversized-t-shirts.html',
+              'gym-t-shirts.html','graphic-t-shirts.html','new-arrivals.html',
+              'custom-print.html','product.html','about.html','contact.html',
+              'faq.html','size-guide.html','shipping.html','returns.html',
+              'privacy.html','terms.html'
+          ]
+
+          front = 'https://raw.githubusercontent.com/ahmadhassan750/ahmad-t-shirts/main/assets/product-front.webp'
+          back = 'https://raw.githubusercontent.com/ahmadhassan750/ahmad-t-shirts/main/assets/product-back.webp'
+
+          for name in pages:
+              p = root / name
+              if not p.exists():
+                  continue
+              s = p.read_text(encoding='utf-8')
+              s = s.replace('assets/product-front.webp', front)
+              s = s.replace('./assets/product-front.webp', front)
+              s = s.replace('assets/product-back.webp', back)
+              s = s.replace('./assets/product-back.webp', back)
+
+              if '<a href="index.html">Home</a>' not in s and '<nav class="links">' in s:
+                  s = s.replace('<nav class="links">', '<nav class="links"><a href="index.html">Home</a>', 1)
+
+              p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+          else
+            git commit -m "Fix page images and add Home navigation"
+            git push
+          fi
