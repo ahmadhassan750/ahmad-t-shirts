@@ -1,4 +1,4 @@
-name: Add header social icons
+name: Add real header social logo images
 on:
   push:
     paths:
@@ -11,25 +11,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Add footer-style social icons to header
+      - name: Add real social logo images beside cart
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          socials='''<div class="headerSocials" aria-label="Social media"><a class="socialLink headerSocial" href="https://www.facebook.com/AhmadTshirts" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook">f</a><a class="socialLink headerSocial" href="https://www.instagram.com/ahmadtshirts1/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">◎</a><a class="socialLink headerSocial" href="https://www.tiktok.com/@ahmadtshirts" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok">♪</a><a class="socialLink headerSocial" href="https://www.youtube.com/@ahmadtshirt" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube">▶</a></div>'''
+          social='''<div class="headerSocials" aria-label="Social media"><a class="headerSocial" href="https://www.facebook.com/AhmadTshirts" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook"><img src="https://cdn.simpleicons.org/facebook/1877F2" alt="Facebook"></a><a class="headerSocial" href="https://www.instagram.com/ahmadtshirts1/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram"><img src="https://cdn.simpleicons.org/instagram/E4405F" alt="Instagram"></a><a class="headerSocial" href="https://www.tiktok.com/@ahmadtshirts" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok"><img src="https://cdn.simpleicons.org/tiktok/111111" alt="TikTok"></a><a class="headerSocial" href="https://www.youtube.com/@ahmadtshirt" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube"><img src="https://cdn.simpleicons.org/youtube/FF0000" alt="YouTube"></a></div>'''
           pattern=r'<div class="actions">.*?</div>'
           m=re.search(pattern,s,re.S)
           if not m:
               raise SystemExit('header actions not found')
           current=m.group(0)
-          if 'headerSocials' not in current:
-              current=current.replace('<button class="action" onclick="openCart()"',socials+'<button class="action cartAction" onclick="openCart()"',1)
-              s=s[:m.start()]+current+s[m.end():]
-          css='''\n<style id="ahmad-header-social-icons">\n.headerSocials{display:flex;align-items:center;gap:9px;margin:0 5px}.headerSocial.headerSocial{width:38px;height:38px;border:1px solid #333;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;background:#181818;transition:.25s;font-size:15px;font-weight:900;line-height:1}.headerSocial.headerSocial:hover{background:#fff;color:#111;border-color:#fff;transform:translateY(-2px)}.headerSocial:nth-child(2){font-size:18px}.headerSocial:nth-child(4){font-size:11px}.cartAction{margin-left:3px}@media(max-width:1000px){.headerSocials{gap:6px}.headerSocial.headerSocial{width:32px;height:32px}}@media(max-width:650px){.headerSocials{display:none}}\n</style>\n'''
-          if 'id="ahmad-header-social-icons"' not in s:
-              s=s.replace('</head>',css+'</head>',1)
+          current=re.sub(r'<div class="headerSocials".*?</div>', '', current, flags=re.S)
+          current=re.sub(r'<button class="action cartAction"', '<button class="action"', current, count=1)
+          current=current.replace('<button class="action" onclick="openCart()"', social+'<button class="action cartAction" onclick="openCart()"',1)
+          s=s[:m.start()]+current+s[m.end():]
+          s=re.sub(r'\n<style id="ahmad-header-social-icons">.*?</style>\n', '\n', s, flags=re.S)
+          css='''\n<style id="ahmad-header-social-images">\n.headerSocials{display:flex;align-items:center;gap:7px;margin:0 5px}.headerSocial{width:31px;height:31px;border:1px solid #333;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#181818;transition:all .25s;overflow:hidden}.headerSocial img{width:17px;height:17px;display:block;object-fit:contain}.headerSocial:hover{background:#fff;border-color:#fff;transform:translateY(-2px);box-shadow:0 5px 14px #0002}.cartAction{margin-left:3px}@media(max-width:1000px){.headerSocials{gap:5px}.headerSocial{width:30px;height:30px}.headerSocial img{width:16px;height:16px}}@media(max-width:650px){.headerSocials{display:none}}\n</style>\n'''
+          s=s.replace('</head>',css+'</head>',1)
           p.write_text(s,encoding='utf-8')
           PY
       - name: Commit changes
@@ -37,5 +38,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git diff --cached --quiet || git commit -m "Match header social icons to footer style"
+          git diff --cached --quiet || git commit -m "Use real social logo images in header"
           git push
