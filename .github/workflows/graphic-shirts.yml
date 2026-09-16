@@ -1,0 +1,35 @@
+name: Add graphic T-shirt mockups
+on:
+  push:
+    paths:
+      - '.github/workflows/graphic-shirts.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace product images with visible graphic T-shirt mockups
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, urllib.parse
+          p=Path('index.html')
+          s=p.read_text()
+          def img(bg, fg, accent, title, sub):
+              svg=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700"><rect width="600" height="700" fill="#eee"/><ellipse cx="300" cy="635" rx="145" ry="22" fill="#000" opacity=".15"/><path d="M170 145L245 105h110l75 40 55 105-65 55-35-70v315H215V235l-35 70-65-55z" fill="{bg}" stroke="#111" stroke-width="6"/><path d="M250 105q50 48 100 0" fill="none" stroke="#222" stroke-width="10"/><text x="300" y="330" fill="{fg}" font-size="46" font-family="Arial" font-weight="900" text-anchor="middle">{title}</text><text x="300" y="375" fill="{accent}" font-size="22" font-family="Arial" font-weight="700" letter-spacing="4" text-anchor="middle">{sub}</text><path d="M220 410h160" stroke="{fg}" stroke-width="4"/><text x="300" y="455" fill="{fg}" font-size="20" font-family="Arial" letter-spacing="3" text-anchor="middle">AHMAD T-SHIRTS</text></svg>'''
+              return 'data:image/svg+xml;utf8,'+urllib.parse.quote(svg)
+          urls=[img('#111','#fff','#2bb6b3','RACING','DIVISION'),img('#171717','#fff','#cfcfcf','NOIR','URBAN CLUB'),img('#697258','#f5f0df','#fff','07','MOTION'),img('#111','#fff','#2bb6b3','BUILT','DIFFERENT')]
+          new="const products=[{id:1,name:'Ahmad Racing Graphic Tee',price:1999,cat:['premium','graphic'],tag:'NEW',image:'%s',meta:'Premium graphic · Modern fit',real:true},{id:2,name:'Noir Urban Graphic Tee',price:1999,cat:['premium','graphic'],tag:'TRENDING',image:'%s',meta:'Bold graphic · Streetwear fit'},{id:3,name:'Motion 07 Oversized Tee',price:1999,cat:['oversized','graphic'],tag:'NEW',image:'%s',meta:'Oversized fit · Statement graphic'},{id:4,name:'Built Different Graphic Tee',price:1999,cat:['premium','graphic'],tag:'ESSENTIAL',image:'%s',meta:'Premium cotton · Graphic print'}];" % tuple(urls)
+          s,n=re.subn(r'const products=\[.*?\];',new,s,count=1,flags=re.S)
+          if n!=1: raise SystemExit('products block not found')
+          p.write_text(s)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Show graphic designs on visible T-shirt mockups'
+          git push
