@@ -1,0 +1,45 @@
+name: Use free fashion visuals for products and categories
+on:
+  push:
+    paths:
+      - '.github/workflows/unsplash-fashion-visuals.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace product and visual images
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text()
+          imgs=[
+            'https://images.unsplash.com/photo-1763403063428-10184adc7be3?auto=format&fit=crop&w=1200&q=85',
+            'https://images.unsplash.com/photo-1771919328088-3476e8fe65b0?auto=format&fit=crop&w=1200&q=85',
+            'https://images.unsplash.com/photo-1711641066067-3c1d03492345?auto=format&fit=crop&w=1200&q=85',
+            'https://images.unsplash.com/photo-1762888244304-5fc76fd832e1?auto=format&fit=crop&w=1200&q=85'
+          ]
+          new=("const products=["
+               "{id:1,name:'Black Graphic Street Tee',price:1999,cat:['premium','graphic'],tag:'NEW',image:'%s',meta:'Graphic print · Modern fit',real:true},"
+               "{id:2,name:'Olive Oversized Graphic Tee',price:1999,cat:['oversized','graphic'],tag:'TRENDING',image:'%s',meta:'Oversized fit · Streetwear style'},"
+               "{id:3,name:'Black Streetwear Graphic Tee',price:1999,cat:['premium','graphic'],tag:'NEW',image:'%s',meta:'Bold graphic · Casual fit'},"
+               "{id:4,name:'White Graphic Casual Tee',price:1999,cat:['premium','graphic'],tag:'ESSENTIAL',image:'%s',meta:'Clean graphic · Everyday fit'}];") % tuple(imgs)
+          s,n=re.subn(r'const products=\[.*?\];',new,s,count=1,flags=re.S)
+          if n!=1:
+              raise SystemExit('products block not found')
+          extra='''\n<script id="ahmad-free-fashion-visuals">\ndocument.addEventListener('DOMContentLoaded',function(){\n  var imgs=%s;\n  var hero=document.querySelector('.heroVisual img');\n  if(hero) hero.src=imgs[0];\n  var feature=document.querySelector('.featureVisual img');\n  if(feature) feature.src=imgs[1];\n});\n</script>\n''' % repr(imgs)
+          if 'ahmad-free-fashion-visuals' not in s:
+              s=s.replace('</body>',extra+'</body>',1)
+          p.write_text(s)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Add free fashion photography to products and categories'
+          git push
