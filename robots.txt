@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ahmadhassan750.github.io/ahmad-t-shirts/sitemap.xml
