@@ -31,8 +31,9 @@
 </style>
 
 
+
 <style id="ahmad-header-social-images">
-.headerSocials{display:flex;align-items:center;gap:7px;margin:0 5px}.headerSocial{width:31px;height:31px;border:1px solid #333;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#181818;transition:all .25s;overflow:hidden}.headerSocial img{width:17px;height:17px;display:block;object-fit:contain}.headerSocial:hover{background:#fff;border-color:#fff;transform:translateY(-2px);box-shadow:0 5px 14px #0002}.cartAction{margin-left:3px}@media(max-width:1000px){.headerSocials{gap:5px}.headerSocial{width:30px;height:30px}.headerSocial img{width:16px;height:16px}}@media(max-width:650px){.headerSocials{display:none}}
+.headerSocials{display:flex;align-items:center;gap:7px;margin:0 4px}.headerSocial{width:31px;height:31px;border:1px solid #d8d8d8;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;transition:all .25s;overflow:hidden}.headerSocial img{width:17px;height:17px;display:block;object-fit:contain}.headerSocial:hover{transform:translateY(-2px);box-shadow:0 5px 14px #0002;border-color:#bbb}.cartAction{margin-left:2px}@media(max-width:1000px){.headerSocials{gap:4px;margin:0 2px}.headerSocial{width:28px;height:28px}.headerSocial img{width:15px;height:15px}}@media(max-width:650px){.headerSocials{gap:3px}.headerSocial{width:25px;height:25px}.headerSocial img{width:13px;height:13px}.actions{gap:3px}}
 </style>
 </head>
 <body>
@@ -40,7 +41,12 @@
 <header class="nav">
 <a class="brand" href="#home"><svg class="logoMark" viewBox="0 0 100 110"><path d="M32 12 48 23 52 23 68 12 94 31 79 49 70 40 70 96 30 96 30 40 21 49 6 31Z" fill="none" stroke="#10294e" stroke-width="8" stroke-linejoin="round"/><path d="M25 31 43 23 76 67 51 96 30 96" fill="none" stroke="#27b7b5" stroke-width="7"/></svg><span><strong>AHMAD</strong><small>T-SHIRTS</small></span></a>
 <nav class="navlinks"><a href="#shop">Shop</a><a href="#categories">Categories</a><a href="#new">New Arrivals</a><a href="#custom">Custom Print</a><a href="#about">About</a></nav>
-<div class="actions"><button class="action" onclick="focusSearch()" aria-label="Search">⌕</button><button class="action cartAction" onclick="openCart()" aria-label="Cart">🛒<sup class="cartCount" id="cartCount">0</sup></button><button class="mobileMenu" onclick="toggleMobile()">☰</button></div>
+<div class="actions"><button class="action" onclick="focusSearch()" aria-label="Search">⌕</button><div class="headerSocials" aria-label="Social media">
+<a class="headerSocial" href="https://www.facebook.com/AhmadTshirts" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook"><img src="https://cdn.simpleicons.org/facebook/1877F2" alt="Facebook"></a>
+<a class="headerSocial" href="https://www.instagram.com/ahmadtshirts1/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram"><img src="https://cdn.simpleicons.org/instagram/E4405F" alt="Instagram"></a>
+<a class="headerSocial" href="https://www.tiktok.com/@ahmadtshirts" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok"><img src="https://cdn.simpleicons.org/tiktok/111111" alt="TikTok"></a>
+<a class="headerSocial" href="https://www.youtube.com/@ahmadtshirt" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube"><img src="https://cdn.simpleicons.org/youtube/FF0000" alt="YouTube"></a>
+</div><button class="action cartAction" onclick="openCart()" aria-label="Cart">🛒<sup class="cartCount" id="cartCount">0</sup></button><button class="mobileMenu" onclick="toggleMobile()">☰</button></div>
 </header>
 <div class="mobileNav" id="mobileNav"><a href="#shop">Shop</a><a href="#categories">Categories</a><a href="#new">New Arrivals</a><a href="#custom">Custom Print</a><a href="#about">About</a></div>
 <main>
