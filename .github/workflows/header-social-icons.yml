@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/workflows/header-social-icons.yml'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:
@@ -15,17 +16,16 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           p=Path('index.html')
-          s=p.read_text()
-          marker='<div class="actions">'
+          s=p.read_text(encoding='utf-8')
           old='''<div class="actions"><button class="action" onclick="focusSearch()" aria-label="Search">⌕</button><button class="action" onclick="openCart()" aria-label="Cart">🛒<sup class="cartCount" id="cartCount">0</sup></button><button class="mobileMenu" onclick="toggleMobile()">☰</button></div>'''
-          new='''<div class="actions"><button class="action" onclick="focusSearch()" aria-label="Search">⌕</button><div class="headerSocials" aria-label="Social media"><a class="headerSocial facebook" href="https://www.facebook.com/AhmadTshirts" target="_blank" rel="noopener" aria-label="Facebook">f</a><a class="headerSocial instagram" href="https://www.instagram.com/ahmadtshirts1/" target="_blank" rel="noopener" aria-label="Instagram">◎</a><a class="headerSocial tiktok" href="https://www.tiktok.com/@ahmadtshirts" target="_blank" rel="noopener" aria-label="TikTok">♪</a><a class="headerSocial youtube" href="https://www.youtube.com/@ahmadtshirt" target="_blank" rel="noopener" aria-label="YouTube">▶</a></div><button class="action cartAction" onclick="openCart()" aria-label="Cart">🛒<sup class="cartCount" id="cartCount">0</sup></button><button class="mobileMenu" onclick="toggleMobile()">☰</button></div>'''
+          new='''<div class="actions"><button class="action" onclick="focusSearch()" aria-label="Search">⌕</button><div class="headerSocials" aria-label="Social media"><a class="headerSocial" href="https://www.facebook.com/AhmadTshirts" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook">f</a><a class="headerSocial" href="https://www.instagram.com/ahmadtshirts1/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">◎</a><a class="headerSocial" href="https://www.tiktok.com/@ahmadtshirts" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok">♪</a><a class="headerSocial" href="https://www.youtube.com/@ahmadtshirt" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube">▶</a></div><button class="action cartAction" onclick="openCart()" aria-label="Cart">🛒<sup class="cartCount" id="cartCount">0</sup></button><button class="mobileMenu" onclick="toggleMobile()">☰</button></div>'''
           if old not in s:
               raise SystemExit('header actions pattern not found')
           s=s.replace(old,new,1)
-          css='''\n<style id="ahmad-header-social-icons">\n.headerSocials{display:flex;align-items:center;gap:5px;margin:0 3px}.headerSocial{width:28px;height:28px;border:1px solid #ddd;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#111;font-size:12px;font-weight:900;transition:all .25s}.headerSocial:hover{background:#111;color:#fff;border-color:#111;transform:translateY(-2px)}.headerSocial.instagram{font-size:17px}.headerSocial.tiktok{font-size:14px}.headerSocial.youtube{font-size:11px}.cartAction{margin-left:2px}@media(max-width:1000px){.headerSocials{gap:3px}.headerSocial{width:26px;height:26px}}@media(max-width:650px){.headerSocials{display:none}}\n</style>\n'''
+          css='''\n<style id="ahmad-header-social-icons">\n.headerSocials{display:flex;align-items:center;gap:6px;margin:0 5px}.headerSocial{width:30px;height:30px;border:1px solid #d9d9d9;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#111;font-size:12px;font-weight:900;line-height:1;transition:all .25s}.headerSocial:hover{background:#111;color:#fff;border-color:#111;transform:translateY(-2px)}.headerSocial:nth-child(2){font-size:17px}.headerSocial:nth-child(4){font-size:10px}.cartAction{margin-left:3px}@media(max-width:1000px){.headerSocials{gap:4px}.headerSocial{width:27px;height:27px}}@media(max-width:650px){.headerSocials{display:none}}\n</style>\n'''
           if 'id="ahmad-header-social-icons"' not in s:
               s=s.replace('</head>',css+'</head>',1)
-          p.write_text(s)
+          p.write_text(s,encoding='utf-8')
           PY
       - name: Commit changes
         run: |
