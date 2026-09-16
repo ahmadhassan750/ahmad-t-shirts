@@ -1,4 +1,4 @@
-name: Fix header social logo images
+name: Upgrade Ahmad T-Shirts 3D website
 on:
   push:
     paths:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fix social icons beside cart
+      - name: Add 3D animations and repair HTML
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -19,38 +19,94 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
+          # Repair a malformed nested style tag created by earlier updates.
+          s = s.replace('<style id="ahmad-social-links">', '</style>\n<style id="ahmad-social-links">')
+
+          # Remove previous versions of our animation/header enhancement blocks.
+          for block_id in ['ahmad-header-social-images','ahmad-3d-motion']:
+              s = re.sub(r'\n<style id="' + re.escape(block_id) + r'">.*?</style>\n', '\n', s, flags=re.S)
+          s = re.sub(r'\n<script id="ahmad-3d-motion-script">.*?</script>\n', '\n', s, flags=re.S)
+
+          # Ensure real social logo images sit directly beside the cart.
           social = '''<div class="headerSocials" aria-label="Social media">
           <a class="headerSocial" href="https://www.facebook.com/AhmadTshirts" target="_blank" rel="noopener" aria-label="Facebook" title="Facebook"><img src="https://cdn.simpleicons.org/facebook/1877F2" alt="Facebook"></a>
           <a class="headerSocial" href="https://www.instagram.com/ahmadtshirts1/" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram"><img src="https://cdn.simpleicons.org/instagram/E4405F" alt="Instagram"></a>
           <a class="headerSocial" href="https://www.tiktok.com/@ahmadtshirts" target="_blank" rel="noopener" aria-label="TikTok" title="TikTok"><img src="https://cdn.simpleicons.org/tiktok/111111" alt="TikTok"></a>
           <a class="headerSocial" href="https://www.youtube.com/@ahmadtshirt" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube"><img src="https://cdn.simpleicons.org/youtube/FF0000" alt="YouTube"></a>
           </div>'''
-
-          # Remove any previous header social block wherever it exists.
           s = re.sub(r'<div class="headerSocials"[^>]*>.*?</div>', '', s, flags=re.S)
+          s = re.sub(r'<button class="action(?: cartAction)?" onclick="openCart\(\)"', social + '<button class="action cartAction" onclick="openCart()"', s, count=1)
 
-          # Remove old header-social CSS blocks.
-          s = re.sub(r'\n<style id="ahmad-header-social-icons">.*?</style>\n', '\n', s, flags=re.S)
-          s = re.sub(r'\n<style id="ahmad-header-social-images">.*?</style>\n', '\n', s, flags=re.S)
-
-          # Put the real logo-image icons immediately before the cart button.
-          cart_pattern = r'<button class="action(?: cartAction)?" onclick="openCart\(\)"'
-          if not re.search(cart_pattern, s):
-              raise SystemExit('cart button not found')
-          s = re.sub(cart_pattern, social + '<button class="action cartAction" onclick="openCart()"', s, count=1)
-
-          css = '''
+          header_css = '''
           <style id="ahmad-header-social-images">
           .headerSocials{display:flex;align-items:center;gap:7px;margin:0 4px}.headerSocial{width:31px;height:31px;border:1px solid #d8d8d8;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;transition:all .25s;overflow:hidden}.headerSocial img{width:17px;height:17px;display:block;object-fit:contain}.headerSocial:hover{transform:translateY(-2px);box-shadow:0 5px 14px #0002;border-color:#bbb}.cartAction{margin-left:2px}@media(max-width:1000px){.headerSocials{gap:4px;margin:0 2px}.headerSocial{width:28px;height:28px}.headerSocial img{width:15px;height:15px}}@media(max-width:650px){.headerSocials{gap:3px}.headerSocial{width:25px;height:25px}.headerSocial img{width:13px;height:13px}.actions{gap:3px}}
           </style>
           '''
-          s = s.replace('</head>', css + '</head>', 1)
+
+          motion_css = '''
+          <style id="ahmad-3d-motion">
+          .heroVisual,.featureVisual,.category,.productVisual{transform-style:preserve-3d;perspective:1000px}
+          .heroVisual img{will-change:transform;transition:transform .18s ease-out,box-shadow .3s ease}
+          .heroVisual:hover img{box-shadow:0 38px 85px #0003}
+          .floatingBadge{transform:translateZ(45px);transition:transform .35s ease}
+          .category,.product{will-change:transform;transition:transform .35s ease,box-shadow .35s ease}
+          .category:hover{transform:translateY(-7px) rotateX(1.5deg) rotateY(-1.5deg);box-shadow:0 20px 40px #0002}
+          .product:hover{transform:translateY(-5px)}
+          .productVisual img{transform-origin:center;will-change:transform}
+          .product:hover .productVisual img{transform:scale(1.045) translateZ(12px)}
+          .btn,.chip,.quick,.action,.socialLink{transition:transform .25s ease,box-shadow .25s ease,background .25s ease,color .25s ease}
+          .btn:hover,.quick:hover{transform:translateY(-3px);box-shadow:0 12px 25px #0002}
+          .reveal3d{opacity:0;transform:translateY(34px) scale(.97);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+          .reveal3d.is-visible{opacity:1;transform:translateY(0) scale(1)}
+          @media(max-width:650px){.category:hover{transform:translateY(-3px)}.heroVisual img{transition:transform .3s ease}.reveal3d{transform:translateY(22px)}}
+          @media(prefers-reduced-motion:reduce){.heroVisual img,.category,.product,.reveal3d{transition:none!important;transform:none!important}.reveal3d{opacity:1!important}}
+          </style>
+          '''
+
+          motion_js = '''
+          <script id="ahmad-3d-motion-script">
+          (()=>{
+            const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if(reduce)return;
+            const hero=document.querySelector('.heroVisual');
+            const heroImg=hero&&hero.querySelector('img');
+            if(hero&&heroImg){
+              hero.addEventListener('mousemove',e=>{
+                const r=hero.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+                heroImg.style.transform=`perspective(900px) rotateX(${y*-5}deg) rotateY(${x*7}deg) translate3d(${x*7}px,${y*5}px,18px)`;
+              });
+              hero.addEventListener('mouseleave',()=>{heroImg.style.transform='rotate(1deg)';});
+            }
+            const reveal=document.querySelectorAll('.section,.shopWrap,.feature,.trust,.cta,.footer,.category,.product');
+            reveal.forEach((el,i)=>{el.classList.add('reveal3d');el.style.transitionDelay=`${Math.min(i%8,7)*45}ms`;});
+            const io=new IntersectionObserver(entries=>entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('is-visible');io.unobserve(en.target)}}),{threshold:.08,rootMargin:'0px 0px -35px'});
+            reveal.forEach(el=>io.observe(el));
+          })();
+          </script>
+          '''
+
+          s = s.replace('</head>', header_css + motion_css + '</head>', 1)
+          s = s.replace('</body>', motion_js + '</body>', 1)
           p.write_text(s, encoding='utf-8')
           PY
-      - name: Commit website fix
+      - name: Validate HTML structure
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          assert s.count('<head>')==1 and s.count('</head>')==1, 'head structure error'
+          assert s.count('<body>')==1 and s.count('</body>')==1, 'body structure error'
+          assert s.count('<style')==s.count('</style>'), 'style tag mismatch'
+          assert s.count('<script')==s.count('</script>'), 'script tag mismatch'
+          assert 'ahmad-3d-motion' in s, '3D CSS missing'
+          assert 'ahmad-3d-motion-script' in s, '3D JS missing'
+          print('HTML structure checks passed')
+          PY
+      - name: Commit website upgrade
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git diff --cached --quiet || git commit -m "Fix real social logo images in header"
+          git diff --cached --quiet || git commit -m "Add 3D animations and repair website HTML"
           git push
