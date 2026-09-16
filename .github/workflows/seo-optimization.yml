@@ -1,0 +1,122 @@
+name: Ahmad T-Shirts SEO Optimization
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/seo-optimization.yml'
+      - 'index.html'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  seo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Optimize homepage SEO
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Remove previous SEO block so repeated runs stay clean.
+          s = re.sub(r'\n<!-- AHMAD-SEO-START -->.*?<!-- AHMAD-SEO-END -->\n?', '\n', s, flags=re.S)
+
+          seo = '''<!-- AHMAD-SEO-START -->
+          <link rel="canonical" href="https://ahmadhassan750.github.io/ahmad-t-shirts/">
+          <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+          <meta name="author" content="Ahmad T-Shirts">
+          <meta name="keywords" content="t-shirts Pakistan, men's t-shirts Pakistan, oversized t-shirts Pakistan, premium t-shirts, graphic t-shirts Pakistan, streetwear Pakistan, custom t-shirts Pakistan, print on demand Pakistan, custom printed t-shirts, Ahmad T-Shirts">
+          <meta name="theme-color" content="#111111">
+          <meta property="og:type" content="website">
+          <meta property="og:site_name" content="Ahmad T-Shirts">
+          <meta property="og:title" content="Ahmad T-Shirts | Premium & Custom T-Shirts in Pakistan">
+          <meta property="og:description" content="Shop premium men's T-shirts, oversized streetwear and custom print on demand T-shirts in Pakistan. Send your design and get it printed on a premium T-shirt.">
+          <meta property="og:url" content="https://ahmadhassan750.github.io/ahmad-t-shirts/">
+          <meta property="og:image" content="https://ahmadhassan750.github.io/ahmad-t-shirts/front-small.webp">
+          <meta property="og:image:alt" content="Ahmad T-Shirts premium black oversized custom T-shirt">
+          <meta name="twitter:card" content="summary_large_image">
+          <meta name="twitter:title" content="Ahmad T-Shirts | Premium & Custom T-Shirts in Pakistan">
+          <meta name="twitter:description" content="Premium men's T-shirts, oversized streetwear and custom print on demand T-shirts in Pakistan.">
+          <meta name="twitter:image" content="https://ahmadhassan750.github.io/ahmad-t-shirts/front-small.webp">
+          <script type="application/ld+json">
+          {
+            "@context":"https://schema.org",
+            "@graph":[
+              {
+                "@type":"Organization",
+                "@id":"https://ahmadhassan750.github.io/ahmad-t-shirts/#organization",
+                "name":"Ahmad T-Shirts",
+                "url":"https://ahmadhassan750.github.io/ahmad-t-shirts/",
+                "logo":"https://ahmadhassan750.github.io/ahmad-t-shirts/front-small.webp",
+                "sameAs":[
+                  "https://www.facebook.com/AhmadTshirts",
+                  "https://www.instagram.com/ahmadtshirts1/",
+                  "https://www.tiktok.com/@ahmadtshirts",
+                  "https://www.youtube.com/@ahmadtshirt"
+                ]
+              },
+              {
+                "@type":"WebSite",
+                "@id":"https://ahmadhassan750.github.io/ahmad-t-shirts/#website",
+                "url":"https://ahmadhassan750.github.io/ahmad-t-shirts/",
+                "name":"Ahmad T-Shirts",
+                "publisher":{"@id":"https://ahmadhassan750.github.io/ahmad-t-shirts/#organization"},
+                "inLanguage":"en-PK"
+              }
+            ]
+          }
+          </script>
+          <!-- AHMAD-SEO-END -->'''
+
+          # Place SEO signals immediately after the viewport meta.
+          marker = '<meta name="viewport" content="width=device-width,initial-scale=1">'
+          if marker not in s:
+              raise SystemExit('Viewport meta tag not found')
+          s = s.replace(marker, marker + '\n' + seo, 1)
+
+          # Strengthen the primary title/description without changing visible design.
+          s = re.sub(r'<title>.*?</title>', '<title>Ahmad T-Shirts | Premium & Custom T-Shirts in Pakistan</title>', s, count=1, flags=re.S)
+          s = re.sub(r'<meta name="description" content="[^"]*">', '<meta name="description" content="Shop premium men\'s T-shirts, oversized streetwear and custom print on demand T-shirts in Pakistan. Send your design and get it printed on a premium T-shirt.">', s, count=1)
+
+          p.write_text(s, encoding='utf-8')
+
+      - name: Validate SEO HTML
+        shell: python
+        run: |
+          from pathlib import Path
+          s = Path('index.html').read_text(encoding='utf-8')
+          checks = {
+            'title': '<title>' in s and '</title>' in s,
+            'description': 'name="description"' in s,
+            'canonical': 'rel="canonical"' in s,
+            'robots': 'name="robots"' in s,
+            'og': 'property="og:title"' in s,
+            'jsonld': 'application/ld+json' in s,
+            'single-head': s.count('<head>') == 1 and s.count('</head>') == 1,
+            'single-body': s.count('<body>') == 1 and s.count('</body>') == 1,
+          }
+          failed = [k for k,v in checks.items() if not v]
+          if failed:
+              raise SystemExit('SEO validation failed: ' + ', '.join(failed))
+          print('SEO validation passed:', ', '.join(checks))
+
+      - name: Commit SEO changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No SEO changes to commit."
+          else
+            git commit -m "Improve homepage SEO metadata and structured data"
+            git push
+          fi
