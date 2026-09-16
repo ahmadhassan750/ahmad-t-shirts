@@ -29,13 +29,17 @@
 .socialLink svg{width:17px;height:17px;fill:currentColor}
 @media(max-width:650px){.socialLink{width:36px;height:36px}}
 </style>
+
+<style id="ahmad-header-social-icons">
+.headerSocials{display:flex;align-items:center;gap:5px;margin:0 3px}.headerSocial{width:28px;height:28px;border:1px solid #ddd;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#111;font-size:12px;font-weight:900;transition:all .25s}.headerSocial:hover{background:#111;color:#fff;border-color:#111;transform:translateY(-2px)}.headerSocial.instagram{font-size:17px}.headerSocial.tiktok{font-size:14px}.headerSocial.youtube{font-size:11px}.cartAction{margin-left:2px}@media(max-width:1000px){.headerSocials{gap:3px}.headerSocial{width:26px;height:26px}}@media(max-width:650px){.headerSocials{display:none}}
+</style>
 </head>
 <body>
 <div class="announcement">FREE DELIVERY ON ORDERS ABOVE PKR 3,000 &nbsp; • &nbsp; CUSTOM PRINT AVAILABLE</div>
 <header class="nav">
 <a class="brand" href="#home"><svg class="logoMark" viewBox="0 0 100 110"><path d="M32 12 48 23 52 23 68 12 94 31 79 49 70 40 70 96 30 96 30 40 21 49 6 31Z" fill="none" stroke="#10294e" stroke-width="8" stroke-linejoin="round"/><path d="M25 31 43 23 76 67 51 96 30 96" fill="none" stroke="#27b7b5" stroke-width="7"/></svg><span><strong>AHMAD</strong><small>T-SHIRTS</small></span></a>
 <nav class="navlinks"><a href="#shop">Shop</a><a href="#categories">Categories</a><a href="#new">New Arrivals</a><a href="#custom">Custom Print</a><a href="#about">About</a></nav>
-<div class="actions"><button class="action" onclick="focusSearch()" aria-label="Search">⌕</button><button class="action" onclick="openCart()" aria-label="Cart">🛒<sup class="cartCount" id="cartCount">0</sup></button><button class="mobileMenu" onclick="toggleMobile()">☰</button></div>
+<div class="actions"><button class="action" onclick="focusSearch()" aria-label="Search">⌕</button><div class="headerSocials" aria-label="Social media"><a class="headerSocial facebook" href="https://www.facebook.com/AhmadTshirts" target="_blank" rel="noopener" aria-label="Facebook">f</a><a class="headerSocial instagram" href="https://www.instagram.com/ahmadtshirts1/" target="_blank" rel="noopener" aria-label="Instagram">◎</a><a class="headerSocial tiktok" href="https://www.tiktok.com/@ahmadtshirts" target="_blank" rel="noopener" aria-label="TikTok">♪</a><a class="headerSocial youtube" href="https://www.youtube.com/@ahmadtshirt" target="_blank" rel="noopener" aria-label="YouTube">▶</a></div><button class="action cartAction" onclick="openCart()" aria-label="Cart">🛒<sup class="cartCount" id="cartCount">0</sup></button><button class="mobileMenu" onclick="toggleMobile()">☰</button></div>
 </header>
 <div class="mobileNav" id="mobileNav"><a href="#shop">Shop</a><a href="#categories">Categories</a><a href="#new">New Arrivals</a><a href="#custom">Custom Print</a><a href="#about">About</a></div>
 <main>
