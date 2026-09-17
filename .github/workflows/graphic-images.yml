@@ -1,0 +1,76 @@
+name: Add graphic T-shirt visuals
+
+on:
+  push:
+    paths:
+      - '.github/workflows/graphic-images.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  graphics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace page visuals with graphic T-shirts
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          G1='https://icdn.tradew.com/file/202506/1576498/jpg/8536824.jpg?x-oss-process=image%2Fquality%2CQ_90'
+          G2='https://shopnertia.com/cdn/shop/files/V12025-05-18_at_1.57.14_PM_8.jpg?v=1774402870&width=1946'
+          G3='https://c.imgz.jp/655/97598655/97598655b_10014_d_500.jpg'
+          G4='https://www.streetscorner.store/cdn/shop/files/flat-lay-skull.png?v=1774900627&width=1024'
+          OWN='https://raw.githubusercontent.com/ahmadhassan750/ahmad-t-shirts/main/assets/product-front.webp'
+          OWN_BACK='https://raw.githubusercontent.com/ahmadhassan750/ahmad-t-shirts/main/assets/product-back.webp'
+
+          page_images={
+            'index.html':[G1,G2,G3],
+            'shop.html':[G1,G2,G3],
+            'men-t-shirts.html':[G1,G2,G3],
+            'oversized-t-shirts.html':[G2,G4,G1],
+            'graphic-t-shirts.html':[G1,G4,G3],
+            'gym-t-shirts.html':[G2,G1,G3],
+            'new-arrivals.html':[G3,G1,G2],
+            'custom-print.html':[G1,G2,G4],
+            'about.html':[G3,G1],
+            'contact.html':[G2,G1],
+            'faq.html':[G1,G3],
+            'size-guide.html':[G3,G1],
+            'shipping.html':[G2,G3],
+            'returns.html':[G3,G2],
+            'privacy.html':[G1,G3],
+            'terms.html':[G2,G4],
+          }
+
+          img_re=re.compile(r'(<img\b[^>]*\bsrc=")([^"]+)("[^>]*>)',re.I)
+          for name,urls in page_images.items():
+            p=Path(name)
+            if not p.exists(): continue
+            s=p.read_text(encoding='utf-8')
+            counter=iter(urls)
+            def repl(m):
+              tag=m.group(0)
+              src=m.group(2)
+              if 'simpleicons.org' in src or 'product-front.webp' in src or 'product-back.webp' in src:
+                return m.group(0)
+              try: new=next(counter)
+              except StopIteration: new=urls[-1]
+              return m.group(1)+new+m.group(3)
+            s=img_re.sub(repl,s)
+            # If the page has no non-social image, add a graphic tee visual after main.
+            non_social=any('simpleicons.org' not in x for x in re.findall(r'<img\b[^>]*src="([^"]+)"',s,re.I))
+            if not non_social:
+              block=f'<section class="wrap"><img class="productCardImg contain" src="{urls[0]}" alt="Graphic T-shirt streetwear visual for Ahmad T-Shirts"></section>'
+              s=s.replace('<main>','<main>'+block,1)
+            p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add '*.html'
+          git diff --cached --quiet || git commit -m 'Use graphic T-shirt visuals across website'
+          git push
