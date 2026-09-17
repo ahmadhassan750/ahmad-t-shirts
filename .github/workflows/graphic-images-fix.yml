@@ -1,0 +1,49 @@
+name: Fix graphic T-shirt page images
+
+on:
+  push:
+    paths:
+      - '.github/workflows/graphic-images-fix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set graphic visuals on storefront pages
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          G=[
+            'https://icdn.tradew.com/file/202506/1576498/jpg/8536824.jpg?x-oss-process=image%2Fquality%2CQ_90',
+            'https://shopnertia.com/cdn/shop/files/V12025-05-18_at_1.57.14_PM_8.jpg?v=1774402870&width=1946',
+            'https://c.imgz.jp/655/97598655/97598655b_10014_d_500.jpg',
+            'https://www.streetscorner.store/cdn/shop/files/flat-lay-skull.png?v=1774900627&width=1024'
+          ]
+          pages=[p for p in Path('.').glob('*.html') if p.name!='product.html']
+          rx=re.compile(r'(<img\b[^>]*\bsrc=")([^"]+)("[^>]*>)',re.I)
+          for pi,p in enumerate(pages):
+            s=p.read_text(encoding='utf-8')
+            n=[0]
+            def repl(m):
+              src=m.group(2)
+              if 'simpleicons.org' in src: return m.group(0)
+              url=G[(pi+n[0])%len(G)]; n[0]+=1
+              return m.group(1)+url+m.group(3)
+            s=rx.sub(repl,s)
+            if not any(u in s for u in G):
+              url=G[pi%len(G)]
+              block=f'<section class="wrap"><img class="productCardImg contain" src="{url}" alt="Graphic T-shirt streetwear visual"></section>'
+              s=s.replace('<main>','<main>'+block,1)
+            p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add '*.html'
+          git diff --cached --quiet || git commit -m "Set graphic T-shirt visuals on storefront pages"
+          git push
